@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#2563eb">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>ZahidExpRecord</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f6fb;color:#172033}
+header{background:#2563eb;color:#fff;padding:16px;position:sticky;top:0;z-index:5}header h1{margin:0;font-size:22px}
+.container{max-width:900px;margin:auto;padding:12px}.card{background:#fff;border-radius:16px;padding:15px;margin:11px 0;box-shadow:0 3px 14px #00000010}
+input,select,button{width:100%;padding:12px;border:1px solid #d8deea;border-radius:10px;font-size:15px;margin-top:7px}
+button{background:#2563eb;color:#fff;border:0;font-weight:bold;cursor:pointer}.secondary{background:#64748b!important}.danger{background:#dc2626!important}.success{background:#16a34a!important}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.summary div{padding:11px;border-radius:12px;background:#eef4ff;text-align:center}.summary b{display:block;font-size:17px;margin-top:5px}
+nav{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:10px 0}nav button{font-size:12px;padding:11px 3px;margin:0}
+.hidden{display:none!important}.income{color:#16a34a}.expense{color:#dc2626}.warn{color:#d97706}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 5px;border-bottom:1px solid #e5e7eb;text-align:left;vertical-align:top}.right{text-align:right}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}.login .card{width:100%;max-width:420px}.logo{font-size:40px;text-align:center}
+.message{padding:10px;border-radius:9px;background:#fff3cd;margin-top:8px;font-size:13px}.muted{font-size:12px;color:#64748b}
+.kpi{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #eee}
+.action{display:flex;gap:5px}.action button{width:auto;padding:7px 9px;margin:0;font-size:12px}
+.badge{display:inline-block;padding:4px 7px;border-radius:20px;background:#eef2ff;font-size:11px}
+.person-card{border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin-top:8px}
+@media(max-width:650px){.summary{grid-template-columns:repeat(2,1fr)}nav{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:1fr}table{font-size:12px}}
+.profile-photo{width:110px;height:110px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 12px;border:3px solid #0a9f6e;background:#fff;box-shadow:0 4px 14px #0002}.login-actions{display:flex;gap:8px}.login-actions button{flex:1}.sticky-save{position:sticky;bottom:8px;z-index:4}.form-help{font-size:12px;color:#64748b;margin:6px 0}
+</style>
+</head>
+<body>
+<div id="loginScreen" class="login">
+ <div class="card">
+  <img class="profile-photo" id="profilePhoto" src="profile.jpg" alt="Profile Photo" onerror="this.src='icon-192.png'">
+  <div class="logo">💰</div><h1 style="text-align:center">ZahidExpRecord</h1>
+  <p id="loginSub" style="text-align:center;color:#64748b">Income, Expense & Debt Manager</p>
+  <input id="loginUser" placeholder="Username" autocomplete="username">
+  <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password">
+  <div class="login-actions"><button type="button" onclick="login()" id="loginBtn">Login</button><button type="button" class="secondary" onclick="toggleLoginPass()" id="showPassBtn">Show</button></div>
+  <div id="loginMsg" class="message hidden"></div>
+  <p class="muted" style="text-align:center">First login: <b>admin</b> / <b>1234</b></p>
+ </div>
+</div>
+
+<div id="app" class="hidden">
+<header><h1>💰 ZahidExpRecord</h1><div id="appSub" class="muted" style="color:#dbeafe">Income & Expense Manager</div></header>
+<div class="container">
+<div class="card" style="text-align:center;margin-bottom:10px"><img class="profile-photo" src="profile.jpg" alt="Profile Photo" style="width:80px;height:80px;margin-bottom:0"></div>
+<nav>
+ <button onclick="showPage('home')" data-t="home">🏠 Home</button>
+ <button onclick="showPage('entry')" data-t="entry">➕ Entry</button>
+ <button onclick="showPage('debt')" data-t="debt">🤝 Debt</button>
+ <button onclick="showPage('report')" data-t="report">📊 Reports</button>
+ <button onclick="showPage('manage')" data-t="manage">✏️ Update</button>
+ <button onclick="showPage('settings')" data-t="settings">⚙️ Settings</button>
+ <button class="secondary" onclick="logout()" data-t="logout">↪ Logout</button>
+</nav>
+
+<section id="home">
+ <div class="card"><h3 data-t="dashboard">Dashboard — সব একসাথে</h3>
+  <div class="summary">
+   <div>Income<b id="dashIncome" class="income">৳ 0.00</b></div>
+   <div>Expense<b id="dashExpense" class="expense">৳ 0.00</b></div>
+   <div>Profit/Loss<b id="dashProfit">৳ 0.00</b></div>
+   <div>Net Debt<b id="dashDebt">৳ 0.00</b></div>
+  </div>
+ </div>
+ <div class="card"><h3 data-t="today">আজকের Summary</h3><div id="todaySummary"></div></div>
+ <div class="card"><h3 data-t="debtOverview">ধার/দেনা Overview</h3><div id="dashPeople"></div></div>
+ <div class="card"><h3 data-t="recent">Recent Entries</h3><div id="recent"></div></div>
+</section>
+
+<section id="entry" class="hidden"><div class="card">
+ <h3 id="entryTitle">Add Income / Expense</h3>
+ <select id="type"><option value="income">Income / আয়</option><option value="expense">Expense / খরচ</option></select>
+ <input id="amount" type="number" min="0" step="0.01" placeholder="Amount / টাকা">
+ <input id="category" placeholder="Category / খাত">
+ <input id="note" placeholder="Note / Description">
+ <input id="date" type="date"><button type="button" class="sticky-save" onclick="saveOrUpdateEntry()" id="entrySave">Save Entry</button>
+ <button class="secondary hidden" onclick="cancelEntryEdit()" id="entryCancel">Cancel Edit</button>
+ <div id="entryMsg" class="message hidden"></div>
+ </div></section>
+
+<section id="debt" class="hidden">
+ <div class="card"><h3 id="debtTitle">🤝 ধার / দেনা Entry</h3>
+  <select id="debtType">
+   <option value="receivable">আমি পাবো — আমি টাকা দিয়েছি</option>
+   <option value="payable">আমি দেব — আমি টাকা নিয়েছি</option>
+   <option value="receive_payment">পরিশোধ পেয়েছি — পাওনা কমবে</option>
+   <option value="make_payment">আমি পরিশোধ করেছি — দেনা কমবে</option>
+  </select>
+  <input id="debtPerson" placeholder="Person Name / ব্যক্তির নাম">
+  <input id="debtAmount" type="number" min="0" step="0.01" placeholder="Amount / টাকা">
+  <input id="debtNote" placeholder="Note / বিবরণ">
+  <input id="debtDate" type="date">
+  <button type="button" class="sticky-save" onclick="saveOrUpdateDebt()" id="debtSave">Save Debt Entry</button>
+  <button class="secondary hidden" onclick="cancelDebtEdit()" id="debtCancel">Cancel Edit</button>
+  <div id="debtMsg" class="message hidden"></div>
+ </div>
+ <div class="card"><h3>💰 Debt Summary</h3><div class="summary">
+  <div>আমি পাবো<b id="debtReceivable" class="income">৳ 0.00</b></div>
+  <div>আমি দেব<b id="debtPayable" class="expense">৳ 0.00</b></div>
+  <div>Net<b id="debtNet">৳ 0.00</b></div><div>Persons<b id="personCount">0</b></div>
+ </div></div>
+ <div class="card"><h3>👤 Person-wise Balance</h3><div id="debtPeople"></div></div>
+ <div class="card"><h3>📋 Debt Entries</h3><div id="debtTable"></div></div>
+</section>
+
+<section id="report" class="hidden">
+ <div class="card"><h3>📊 Daily / Monthly / Yearly Report</h3>
+  <select id="reportPeriod" onchange="renderReport()"><option value="daily">Daily / দৈনিক</option><option value="monthly">Monthly / মাসিক</option><option value="yearly">Yearly / বার্ষিক</option></select>
+  <input id="reportDate" type="date" onchange="renderReport()">
+  <select id="reportMonth" class="hidden" onchange="renderReport()"></select>
+  <select id="reportYear" class="hidden" onchange="renderReport()"></select>
+  <div class="summary" style="margin-top:10px"><div>Income<b id="rIncome" class="income">৳ 0</b></div><div>Expense<b id="rExpense" class="expense">৳ 0</b></div><div>Profit/Loss<b id="rProfit">৳ 0</b></div><div>Net Debt<b id="rDebt">৳ 0</b></div></div>
+ </div>
+ <div class="card"><h3>📋 Entry Details</h3><div id="reportTable"></div></div>
+ <div class="card"><h3>👤 Person-wise Debt Report</h3><div id="reportDebtPeople"></div></div>
+</section>
+
+<section id="manage" class="hidden">
+ <div class="card"><h3>✏️ Update / Delete — সকল Entry</h3><div id="manageTable"></div></div>
+</section>
+
+<section id="settings" class="hidden">
+ <div class="card"><h3>🔐 Login Settings</h3>
+  <input id="oldPass" type="password" placeholder="Current Password">
+  <input id="newPass" type="password" placeholder="New Password">
+  <input id="confirmPass" type="password" placeholder="Confirm New Password">
+  <button onclick="changePassword()">Change Password</button><div id="passMsg" class="message hidden"></div>
+  <hr style="margin:16px 0;border:0;border-top:1px solid #eee">
+  <h3>👤 Username</h3><input id="newUser" placeholder="New Username"><button onclick="changeUsername()">Update Username</button><div id="userMsg" class="message hidden"></div>
+ </div>
+ <div class="card"><h3>🌐 Language / ভাষা</h3><button onclick="setLang('bn')">বাংলা</button><button onclick="setLang('en')" class="secondary">English</button><p class="muted">Language preference is saved on this device.</p></div>
+</section>
+</div></div>
+
+<script>
+const K={entries:'MER_entries_v3',debts:'MER_debts_v3',user:'MER_user_v3',pass:'MER_pass_v3',lang:'MER_lang_v3',session:'MER_session_v3'};
+let entries=load(K.entries,[]), debts=load(K.debts,[]), lang=localStorage.getItem(K.lang)||'en', editEntryId=null, editDebtId=null;
+const $=id=>document.getElementById(id);
+function load(k,d){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(d))}catch(e){return d}}
+function persist(){localStorage.setItem(K.entries,JSON.stringify(entries));localStorage.setItem(K.debts,JSON.stringify(debts))}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function money(n){return '৳ '+Number(n||0).toLocaleString('en-BD',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function sum(a){return a.reduce((s,x)=>s+Number(x.amount||0),0)}
+function entryTotals(list){return {income:sum(list.filter(x=>x.type==='income')),expense:sum(list.filter(x=>x.type==='expense'))}}
+function debtBalances(list=debts){
+ const people={};
+ list.forEach(x=>{
+  if(!people[x.person])people[x.person]={receivable:0,payable:0};
+  if(x.type==='receivable')people[x.person].receivable+=Number(x.amount);
+  if(x.type==='payable')people[x.person].payable+=Number(x.amount);
+  if(x.type==='receive_payment')people[x.person].receivable-=Number(x.amount);
+  if(x.type==='make_payment')people[x.person].payable-=Number(x.amount);
+ });
+ return people;
+}
+function debtTotals(list=debts){let r=0,p=0;list.forEach(x=>{if(x.type==='receivable')r+=+x.amount;if(x.type==='receive_payment')r-=+x.amount;if(x.type==='payable')p+=+x.amount;if(x.type==='make_payment')p-=+x.amount});return {receivable:r,payable:p,net:r-p}}
+function toggleLoginPass(){const i=$('loginPass'),b=$('showPassBtn');i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?(lang==='bn'?'দেখুন':'Show'):(lang==='bn'?'লুকান':'Hide')}
+function ensureDefaults(){if(!localStorage.getItem(K.user))localStorage.setItem(K.user,'admin');if(!localStorage.getItem(K.pass))localStorage.setItem(K.pass,'1234');if(!Array.isArray(entries))entries=[];if(!Array.isArray(debts))debts=[]}
+function setupKeyboard(){['loginUser','loginPass'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter')login()}));$('amount').addEventListener('keydown',e=>{if(e.key==='Enter')saveOrUpdateEntry()});$('debtAmount').addEventListener('keydown',e=>{if(e.key==='Enter')saveOrUpdateDebt()})}
+function login(){
+ const u=$('loginUser').value.trim(), p=$('loginPass').value, su=localStorage.getItem(K.user)||'admin', sp=localStorage.getItem(K.pass)||'1234';
+ $('loginMsg').classList.add('hidden');
+ if(!u||!p){showMsg('loginMsg',lang==='bn'?'Username এবং Password দিন।':'Please enter username and password.');return}
+ if(u===su&&p===sp){localStorage.setItem(K.session,'1');openApp();$('loginPass').value=''}else showMsg('loginMsg',lang==='bn'?'Username অথবা Password ভুল।':'Wrong username or password.');
+}
+function logout(){localStorage.removeItem(K.session);$('app').classList.add('hidden');$('loginScreen').classList.remove('hidden');$('loginPass').value=''}
+function openApp(){$('loginScreen').classList.add('hidden');$('app').classList.remove('hidden');applyLang();renderAll()}
+function showPage(p){['home','entry','debt','report','manage','settings'].forEach(x=>$(x).classList.toggle('hidden',x!==p));renderAll()}
+function showMsg(id,t){$(id).textContent=t;$(id).classList.remove('hidden')}
+function clearEntryForm(){$('amount').value='';$('category').value='';$('note').value='';$('date').value=today()}
+function saveOrUpdateEntry(){
+ const amount=Number($('amount').value), type=$('type').value, category=$('category').value.trim()||'General', note=$('note').value.trim(), date=$('date').value||today();
+ if(!(amount>0)){showMsg('entryMsg',lang==='bn'?'সঠিক টাকার পরিমাণ দিন।':'Enter a valid amount.');return}
+ if(editEntryId){const x=entries.find(e=>String(e.id)===String(editEntryId));if(!x)return;Object.assign(x,{type,amount,category,note,date});showMsg('entryMsg',lang==='bn'?'Entry আপডেট হয়েছে।':'Entry updated successfully.');cancelEntryEdit(false)}
+ else {entries.push({id:Date.now()+Math.random(),type,amount,category,note,date});showMsg('entryMsg',lang==='bn'?'Entry সংরক্ষণ হয়েছে।':'Entry saved successfully.');clearEntryForm()}
+ persist();renderAll()
+}
+function editEntry(id){const x=entries.find(e=>String(e.id)===String(id));if(!x)return;editEntryId=id;$('type').value=x.type;$('amount').value=x.amount;$('category').value=x.category;$('note').value=x.note;$('date').value=x.date;$('entrySave').textContent='Update Entry';$('entryCancel').classList.remove('hidden');showPage('entry')}
+function cancelEntryEdit(clear=true){editEntryId=null;$('entrySave').textContent='Save Entry';$('entryCancel').classList.add('hidden');if(clear)clearEntryForm()}
+function deleteEntry(id){if(confirm(lang==='bn'?'এই entry delete করবেন?':'Delete this entry?')){entries=entries.filter(e=>String(e.id)!==String(id));persist();renderAll()}}
+function saveOrUpdateDebt(){
+ const amount=Number($('debtAmount').value), person=$('debtPerson').value.trim(), type=$('debtType').value, note=$('debtNote').value.trim(), date=$('debtDate').value||today();
+ if(!person){showMsg('debtMsg',lang==='bn'?'ব্যক্তির নাম দিন।':'Enter person name.');return}
+ if(!(amount>0)){showMsg('debtMsg',lang==='bn'?'সঠিক টাকার পরিমাণ দিন।':'Enter a valid amount.');return}
+ if(editDebtId){const x=debts.find(d=>String(d.id)===String(editDebtId));if(!x)return;Object.assign(x,{type,person,amount,note,date});showMsg('debtMsg',lang==='bn'?'Debt entry আপডেট হয়েছে।':'Debt entry updated.');cancelDebtEdit(false)}
+ else {debts.push({id:Date.now()+Math.random(),type,person,amount,note,date});showMsg('debtMsg',lang==='bn'?'Debt entry সংরক্ষণ হয়েছে।':'Debt entry saved.');clearDebtForm()}
+ persist();renderAll()
+}
+function clearDebtForm(){$('debtPerson').value='';$('debtAmount').value='';$('debtNote').value='';$('debtDate').value=today()}
+function editDebt(id){const x=debts.find(d=>String(d.id)===String(id));if(!x)return;editDebtId=id;$('debtType').value=x.type;$('debtPerson').value=x.person;$('debtAmount').value=x.amount;$('debtNote').value=x.note;$('debtDate').value=x.date;$('debtSave').textContent='Update Debt Entry';$('debtCancel').classList.remove('hidden');showPage('debt')}
+function cancelDebtEdit(clear=true){editDebtId=null;$('debtSave').textContent='Save Debt Entry';$('debtCancel').classList.add('hidden');if(clear)clearDebtForm()}
+function deleteDebt(id){if(confirm(lang==='bn'?'এই debt entry delete করবেন?':'Delete this debt entry?')){debts=debts.filter(x=>String(x.id)!==String(id));persist();renderAll()}}
+function renderHome(){
+ const t=entryTotals(entries),d=debtTotals();$('dashIncome').textContent=money(t.income);$('dashExpense').textContent=money(t.expense);$('dashProfit').textContent=money(t.income-t.expense);$('dashDebt').textContent=money(d.net);
+ const td=entryTotals(entries.filter(x=>x.date===today()));$('todaySummary').innerHTML=`<div class="kpi"><span>Income / আয়</span><b class="income">${money(td.income)}</b></div><div class="kpi"><span>Expense / খরচ</span><b class="expense">${money(td.expense)}</b></div><div class="kpi"><span>Profit/Loss</span><b>${money(td.income-td.expense)}</b></div>`;
+ const people=debtBalances();let arr=Object.entries(people).filter(([n,v])=>Math.abs(v.receivable)>0.001||Math.abs(v.payable)>0.001);
+ $('dashPeople').innerHTML=arr.length?arr.map(([n,v])=>`<div class="person-card"><b>${esc(n)}</b><div class="kpi"><span>আমি পাবো</span><b class="income">${money(v.receivable)}</b></div><div class="kpi"><span>আমি দেব</span><b class="expense">${money(v.payable)}</b></div><div class="kpi"><span>Net</span><b>${money(v.receivable-v.payable)}</b></div></div>`).join(''):'<p class="muted">No debt balance.</p>';
+ const recent=[...entries].sort((a,b)=>b.id-a.id).slice(0,8);$('recent').innerHTML=entryTable(recent)||'<p>No entries yet.</p>';
+}
+function entryTable(list,actions=false){if(!list.length)return '';return `<div style="overflow:auto"><table><tr><th>Date</th><th>Type</th><th>Category</th><th>Note</th><th>Amount</th>${actions?'<th>Action</th>':''}</tr>${list.map(x=>`<tr><td>${x.date}</td><td class="${x.type==='income'?'income':'expense'}">${x.type==='income'?'Income':'Expense'}</td><td>${esc(x.category)}</td><td>${esc(x.note)}</td><td>${money(x.amount)}</td>${actions?`<td><div class="action"><button onclick="editEntry(${x.id})">Edit</button><button class="danger" onclick="deleteEntry(${x.id})">Delete</button></div></td>`:''}</tr>`).join('')}</table></div>`}
+function debtLabel(t){return {receivable:'আমি পাবো',payable:'আমি দেব',receive_payment:'পাওনা পরিশোধ পেয়েছি',make_payment:'আমি দেনা পরিশোধ করেছি'}[t]||t}
+function debtTable(list){if(!list.length)return '<p>No debt entries.</p>';return `<div style="overflow:auto"><table><tr><th>Date</th><th>Person</th><th>Type</th><th>Amount</th><th>Note</th><th>Action</th></tr>${list.map(x=>`<tr><td>${x.date}</td><td>${esc(x.person)}</td><td>${debtLabel(x.type)}</td><td>${money(x.amount)}</td><td>${esc(x.note)}</td><td><div class="action"><button onclick="editDebt(${x.id})">Edit</button><button class="danger" onclick="deleteDebt(${x.id})">Delete</button></div></td></tr>`).join('')}</table></div>`}
+function renderDebt(){
+ const d=debtTotals();$('debtReceivable').textContent=money(d.receivable);$('debtPayable').textContent=money(d.payable);$('debtNet').textContent=money(d.net);
+ const people=debtBalances();let arr=Object.entries(people).filter(([n,v])=>Math.abs(v.receivable)>0.001||Math.abs(v.payable)>0.001);$('personCount').textContent=arr.length;
+ $('debtPeople').innerHTML=arr.length?`<div style="overflow:auto"><table><tr><th>Person</th><th>আমি পাবো</th><th>আমি দেব</th><th>Net</th></tr>${arr.map(([n,v])=>`<tr><td>${esc(n)}</td><td class="income">${money(v.receivable)}</td><td class="expense">${money(v.payable)}</td><td>${money(v.receivable-v.payable)}</td></tr>`).join('')}</table></div>`:'<p>No debt balance.</p>';
+ $('debtTable').innerHTML=debtTable([...debts].sort((a,b)=>b.id-a.id));
+}
+function renderManage(){$('manageTable').innerHTML='<h4>Income / Expense</h4>'+entryTable([...entries].sort((a,b)=>b.id-a.id),true)+'<h4 style="margin-top:18px">Debt / Payment</h4>'+debtTable([...debts].sort((a,b)=>b.id-a.id))}
+function renderReport(){
+ const period=$('reportPeriod').value,d=$('reportDate'),m=$('reportMonth'),y=$('reportYear');d.classList.toggle('hidden',period!=='daily');m.classList.toggle('hidden',period!=='monthly');y.classList.toggle('hidden',period!=='yearly');
+ const years=[...new Set(entries.map(x=>x.date.slice(0,4)).concat(debts.map(x=>x.date.slice(0,4))))].sort().reverse();if(!years.length)years.push(String(new Date().getFullYear()));y.innerHTML=years.map(v=>`<option>${v}</option>`).join('');
+ const now=new Date(), months=[];for(let i=0;i<12;i++){const dt=new Date(now.getFullYear(),i,1),v=dt.toISOString().slice(0,7);months.push(`<option value="${v}">${dt.toLocaleString(lang==='bn'?'bn-BD':'en',{month:'long',year:'numeric'})}</option>`)}m.innerHTML=months.join('');
+ let dateKey=d.value||today(); if(!d.value)d.value=today(); if(period==='monthly'&&!m.value)m.value=today().slice(0,7); if(period==='yearly'&&!y.value)y.value=String(new Date().getFullYear());
+ let es=entries,ds=debts;
+ if(period==='daily'){es=entries.filter(x=>x.date===dateKey);ds=debts.filter(x=>x.date===dateKey)}
+ if(period==='monthly'){es=entries.filter(x=>x.date.slice(0,7)===m.value);ds=debts.filter(x=>x.date.slice(0,7)===m.value)}
+ if(period==='yearly'){es=entries.filter(x=>x.date.slice(0,4)===y.value);ds=debts.filter(x=>x.date.slice(0,4)===y.value)}
+ const t=entryTotals(es),dt=debtTotals(ds);$('rIncome').textContent=money(t.income);$('rExpense').textContent=money(t.expense);$('rProfit').textContent=money(t.income-t.expense);$('rDebt').textContent=money(dt.net);$('reportTable').innerHTML=entryTable([...es].sort((a,b)=>b.id-a.id))||'<p>No entries found.</p>';
+ const p=debtBalances(ds),arr=Object.entries(p);$('reportDebtPeople').innerHTML=arr.length?`<div style="overflow:auto"><table><tr><th>Person</th><th>আমি পাবো</th><th>আমি দেব</th><th>Net</th></tr>${arr.map(([n,v])=>`<tr><td>${esc(n)}</td><td class="income">${money(v.receivable)}</td><td class="expense">${money(v.payable)}</td><td>${money(v.receivable-v.payable)}</td></tr>`).join('')}</table></div>`:'<p>No person-wise debt data.</p>';
+}
+function changePassword(){
+ const old=$('oldPass').value,n=$('newPass').value,c=$('confirmPass').value,current=localStorage.getItem(K.pass)||'1234';
+ if(old!==current)return showMsg('passMsg',lang==='bn'?'বর্তমান Password ভুল।':'Current password is incorrect.');
+ if(n.length<4)return showMsg('passMsg',lang==='bn'?'Password কমপক্ষে 4 অক্ষরের দিন।':'Password must be at least 4 characters.');
+ if(n!==c)return showMsg('passMsg',lang==='bn'?'দুইটি নতুন Password মিলছে না।':'New passwords do not match.');
+ localStorage.setItem(K.pass,n);showMsg('passMsg',lang==='bn'?'Password পরিবর্তন হয়েছে।':'Password changed successfully.');$('oldPass').value=$('newPass').value=$('confirmPass').value=''
+}
+function changeUsername(){const n=$('newUser').value.trim();if(n.length<3)return showMsg('userMsg',lang==='bn'?'Username কমপক্ষে 3 অক্ষরের দিন।':'Username must be at least 3 characters.');localStorage.setItem(K.user,n);showMsg('userMsg',lang==='bn'?'Username আপডেট হয়েছে।':'Username updated successfully.');$('newUser').value=''}
+const T={en:{home:'🏠 Home',entry:'➕ Entry',debt:'🤝 Debt',report:'📊 Reports',manage:'✏️ Update',settings:'⚙️ Settings',logout:'↪ Logout',dashboard:'Dashboard — Everything Together',today:"Today's Summary",debtOverview:'Debt Overview',recent:'Recent Entries'},bn:{home:'🏠 হোম',entry:'➕ এন্ট্রি',debt:'🤝 ধার/দেনা',report:'📊 রিপোর্ট',manage:'✏️ আপডেট/ডিলিট',settings:'⚙️ সেটিংস',logout:'↪ লগআউট',dashboard:'ড্যাশবোর্ড — সব একসাথে',today:'আজকের সারাংশ',debtOverview:'ধার/দেনা Overview',recent:'সাম্প্রতিক এন্ট্রি'}};
+function setLang(l){lang=l;localStorage.setItem(K.lang,l);applyLang();renderAll()}
+function applyLang(){document.documentElement.lang=lang;document.querySelectorAll('[data-t]').forEach(e=>{const k=e.dataset.t;if(T[lang][k])e.textContent=T[lang][k]})}
+function renderAll(){renderHome();renderDebt();renderManage();renderReport()}
+ensureDefaults();$('date').value=today();$('reportDate').value=today();$('debtDate').value=today();applyLang();setupKeyboard();if(localStorage.getItem(K.session)==='1')openApp();
+</script>
+<script>if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));</script>
+</body></html>
